@@ -7,6 +7,8 @@ import './style.scss';
 
 import { Patient } from '../../vite-env';
 
+import { api } from '../../service/api';
+
 
 export function ModalPacientRegister() {
 
@@ -19,9 +21,16 @@ export function ModalPacientRegister() {
   function handleClose() { setIsVisibleModal(false) }
   function handleShow() { setIsVisibleModal(true) }
 
-  function handleFormSubmit() {
-    console.log(patient);
-    handleClose()
+  async function handleFormSubmit(e: React.FormEvent<HTMLFormElement | HTMLButtonElement>) {
+    e.preventDefault()
+
+    const data = await api.post('paciente', patient)
+      .then(res => console.log(res))
+      .catch(error => console.log(error))
+
+    console.log("terminou")
+    // console.log(patient);
+    // handleClose()
   };
 
 
@@ -39,10 +48,28 @@ export function ModalPacientRegister() {
       }
     }
 
-    setPatient((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    if (name === 'birthdate') {
+
+      const inputDate = new Date(value);
+      if (inputDate instanceof Date && !isNaN(inputDate.valueOf())) {
+        const minDate = new Date('1900-01-01');
+        const maxDate = new Date();
+        if (inputDate >= minDate && inputDate <= maxDate) {
+          setPatient((prevState) => ({
+            ...prevState,
+            birthdate: inputDate,
+          }));
+        }
+      }
+
+    } else {
+
+      setPatient((prevState) => ({
+        ...prevState,
+        [name]: value,
+
+      }));
+    }
   };
 
   function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -61,26 +88,47 @@ export function ModalPacientRegister() {
     <>
       <Button onClick={handleShow} >Cadastrar Paciente</Button>
       <Modal show={isVisibleModal}>
-        <Modal.Header closeButton>
+        <Modal.Header >
           Cadastro de Paciente
         </Modal.Header>
         <Modal.Body>
-          <Form onSubmit={handleFormSubmit}>
+          <Form onSubmit={handleFormSubmit} name="CadPaciente">
             <Form.Group controlId="formBasicName">
               <Form.Label>Nome</Form.Label>
-              <Form.Control type="text" placeholder="Digite o nome do paciente" name="name" value={patient.name} onChange={handleInputChange} />
+              <Form.Control
+                type="text"
+                placeholder="Digite o nome do paciente"
+                name="name"
+                value={patient.name}
+                onChange={handleInputChange}
+                required
+              />
             </Form.Group>
 
             <Form.Group controlId="formBasicBirthdate">
               <Form.Label>Data de nascimento</Form.Label>
-              <Form.Control type="date" placeholder="Digite a data de nascimento do paciente" name="birthdate" value={patient.birthdate.toISOString().substr(0, 10)} onChange={handleInputChange} />
+              <Form.Control
+                type="date"
+                placeholder="Digite a data de nascimento do paciente"
+                name="birthdate"
+                value={patient.birthdate.toISOString().substr(0, 10)}
+                onChange={handleInputChange}
+                required
+              />
             </Form.Group>
 
             <Form.Group controlId="formBasicCPF">
               <Form.Label>CPF</Form.Label>
-              <InputMask mask="999.999.999-99" value={patient.cpf} onChange={handleInputChange}>
-                {(inputProps: any) => <Form.Control type="text" placeholder="Digite o CPF do paciente" name="cpf" {...inputProps} />}
-              </InputMask>
+              <InputMask
+                mask="999.999.999-99"
+                value={patient.cpf}
+                onChange={handleInputChange}
+                placeholder="Digite o CPF do paciente"
+                name='cpf'
+                type='text'
+                className="form-control"
+                required
+              />
               {cpfError && (
                 <Form.Text className="text-danger">{cpfError}</Form.Text>
               )}
@@ -89,25 +137,38 @@ export function ModalPacientRegister() {
 
             <Form.Group controlId="formBasicPhone">
               <Form.Label>Telefone</Form.Label>
-              <InputMask mask="(99) 99999-9999" value={patient.phone} onChange={handleInputChange}>
-                {(inputProps: any) => <Form.Control type="text" placeholder="Digite o telefone do paciente" name="phone" {...inputProps} />}
-              </InputMask>
+              <InputMask
+                mask="(99) 99999-9999"
+                value={patient.phone}
+                onChange={handleInputChange}
+                name="phone"
+                placeholder="Digite o telefone do paciente"
+                className="form-control"
+              />
             </Form.Group>
 
             <Form.Group controlId="formBasicPhoto">
               <Form.Label>Foto</Form.Label>
-              <Form.Control type='file' accept=".jpg,.jpeg,.png" name="photo" onChange={handleFileInputChange} />
+              <Form.Control
+                type='file'
+                accept=".jpg,.jpeg,.png"
+                name="photo"
+                onChange={handleFileInputChange}
+                required
+              />
             </Form.Group>
+
+            <Modal.Footer className='mt-4 mr-0 pb-0'>
+              <Button variant="secondary" onClick={handleClose}>
+                Cancelar
+              </Button>
+              <Button variant="primary" onClick={handleFormSubmit} type="submit" >
+                Salvar
+              </Button>
+
+            </Modal.Footer>
           </Form>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Cancelar
-          </Button>
-          <Button variant="primary" onClick={handleFormSubmit}>
-            Salvar
-          </Button>
-        </Modal.Footer>
       </Modal>
     </>
   )

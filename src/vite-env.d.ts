@@ -7,3 +7,12 @@ export interface Patient {
   phone: string;
   photo: File | null;
 }
+
+interface ImportMetaEnv {
+  readonly VITE_APP_TITLE: string;
+  readonly VITE_APP_BASE_URL: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
