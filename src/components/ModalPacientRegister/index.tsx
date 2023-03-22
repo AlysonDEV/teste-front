@@ -26,25 +26,25 @@ export function ModalPacientRegister() {
 
   async function handleFormSubmit(e: React.FormEvent<HTMLFormElement | HTMLButtonElement>) {
     e.preventDefault()
-    // console.log(patient.foto)
+    console.log(patient.foto)
 
 
-    const formData = new FormData();
-    formData.append('nome', patient.nome);
-    formData.append('dt_nascimento', patient.dt_nascimento.toISOString().substring(0, 10));
-    formData.append('cpf', patient.cpf);
-    formData.append('telefone', patient.telefone);
-    formData.append('foto', patient.foto);
+    const fData = new FormData();
+    fData.append('nome', patient.nome);
+    fData.append('dt_nascimento', patient.dt_nascimento.toISOString().substring(0, 10));
+    fData.append('cpf', patient.cpf);
+    fData.append('telefone', patient.telefone);
+    fData.append('foto', patient.foto);
 
-    console.log(formData[0])
+
 
     const configAxios = {
       headers: {
-        "Content-Type": `multipart/form-data; boundary=${formData._boundary}`,
+        "Content-Type": `multipart/form-data; boundary=${fData._boundary}`,
       }
     }
 
-    const data = await api.post('paciente', formData, configAxios)
+    const data = await api.post('paciente', fData, configAxios)
       .then(res => console.log(res))
       .catch(error => console.log(error))
   };
