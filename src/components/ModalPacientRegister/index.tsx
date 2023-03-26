@@ -5,13 +5,14 @@ import InputMask from 'react-input-mask';
 import { CPFValidation } from '../CPFValidation';
 import './style.scss';
 
-import { Patient } from '../../vite-env';
-
-import { api } from '../../service/api';
 
 
+import { api } from '../../api';
+import { Notification } from '../Notification';
 
-export function ModalPacientRegister() {
+
+
+export function ModalPacientRegister(): JSX.Element {
 
   const [patient, setPatient] = useState<Patient>(
     { nome: '', dt_nascimento: new Date(), cpf: '', telefone: '', foto: null }
@@ -24,29 +25,36 @@ export function ModalPacientRegister() {
   function handleClose() { setIsVisibleModal(false) }
   function handleShow() { setIsVisibleModal(true) }
 
+  interface AxiosConfig {
+    headers: {
+      "Content-Type": string;
+    };
+  }
+
+
+
   async function handleFormSubmit(e: React.FormEvent<HTMLFormElement | HTMLButtonElement>) {
     e.preventDefault()
-    console.log(patient.foto)
 
-
-    const fData = new FormData();
+    const fData: FormData = new FormData();
     fData.append('nome', patient.nome);
     fData.append('dt_nascimento', patient.dt_nascimento.toISOString().substring(0, 10));
     fData.append('cpf', patient.cpf);
     fData.append('telefone', patient.telefone);
     fData.append('foto', patient.foto);
 
-
-
     const configAxios = {
       headers: {
-        "Content-Type": `multipart/form-data; boundary=${fData._boundary}`,
+        "Content-Type": `multipart/form-data`,
       }
     }
+
 
     const data = await api.post('paciente', fData, configAxios)
       .then(res => console.log(res))
       .catch(error => console.log(error))
+
+
   };
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
@@ -103,6 +111,7 @@ export function ModalPacientRegister() {
 
   return (
     <>
+      <Notification />
       <Button onClick={handleShow} >Cadastrar Paciente</Button>
       <Modal show={isVisibleModal}>
         <Modal.Header >
