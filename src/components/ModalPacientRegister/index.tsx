@@ -7,9 +7,16 @@ import './style.scss';
 
 
 
-import { api } from '../../api';
-import { Notification } from '../Notification';
+import { ToastContainer } from 'react-toastify';
+import { api } from '../../service/api';
+import { Patient } from '../../vite-env';
+import { showNotification } from '../Notification';
 
+interface AxiosConfig {
+  headers: {
+    "Content-Type": string;
+  };
+}
 
 
 export function ModalPacientRegister(): JSX.Element {
@@ -22,19 +29,13 @@ export function ModalPacientRegister(): JSX.Element {
 
   const [cpfError, setCpfError] = useState('')
 
+
   function handleClose() { setIsVisibleModal(false) }
   function handleShow() { setIsVisibleModal(true) }
 
-  interface AxiosConfig {
-    headers: {
-      "Content-Type": string;
-    };
-  }
-
-
-
   async function handleFormSubmit(e: React.FormEvent<HTMLFormElement | HTMLButtonElement>) {
     e.preventDefault()
+
 
     const fData: FormData = new FormData();
     fData.append('nome', patient.nome);
@@ -49,13 +50,23 @@ export function ModalPacientRegister(): JSX.Element {
       }
     }
 
+    try {
+      const data = await api.post('paciente', fData, configAxios)
+      showNotification({ message: "Cadastro realizado com sucesso", type: 'success' })
+      setPatient({ nome: '', dt_nascimento: new Date(), cpf: '', telefone: '', foto: null })
+      handleClose()
+    } catch (error) {
+      const errorObj = error.response?.data?.error;
+      const errorMessage = errorObj ? Object.values(errorObj).join('\n') : 'Erro desconhecido';
 
-    const data = await api.post('paciente', fData, configAxios)
-      .then(res => console.log(res))
-      .catch(error => console.log(error))
+      showNotification({ message: `Erro ao criar paciente!\n${errorMessage}`, type: 'error' });
+    }
+
+
 
 
   };
+
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
@@ -111,7 +122,9 @@ export function ModalPacientRegister(): JSX.Element {
 
   return (
     <>
-      <Notification />
+
+
+      <ToastContainer />
       <Button onClick={handleShow} >Cadastrar Paciente</Button>
       <Modal show={isVisibleModal}>
         <Modal.Header >

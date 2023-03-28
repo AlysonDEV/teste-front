@@ -1,14 +1,13 @@
-import { toast, ToastContainer, ToastOptions } from 'react-toastify';
+import { toast, ToastOptions } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface NotificationProps {
   message?: string;
-  type?: string;
+  type: 'info' | 'success' | 'warning' | 'error';
 }
 
 
-
-export function Notification({ message, type }: NotificationProps) {
+export function showNotification({ message, type = "info" }: NotificationProps) {
   const config: ToastOptions = {
     position: "top-right",
     autoClose: 5000,
@@ -18,16 +17,27 @@ export function Notification({ message, type }: NotificationProps) {
     draggable: true,
     progress: undefined,
     theme: "dark",
+
   }
 
-  const notify = () => type == "error" ?
-    toast.error(message, config) : toast(message, config)
+  switch (type) {
+    case 'success':
+      toast.success(message, { ...config, toastId: 'success', });
+      break;
+    case 'warning':
+      toast.warn(message, { ...config, toastId: 'warning', });
+      break;
+    case 'error':
+      toast.error(() => message, { ...config, toastId: 'error', });
+      break;
+    default:
+      toast.info(message, { ...config, toastId: 'info', });
+      break;
+  }
 
-  return (
-    <div>
-      <button onClick={notify}>Notify!</button>
-      <ToastContainer />
-    </div>
-  );
+
+
+
+
 }
 
