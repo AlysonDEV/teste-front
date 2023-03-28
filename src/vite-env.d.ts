@@ -1,8 +1,9 @@
 /// <reference types="vite/client" />
 
 export interface Patient {
+  id: string;
   nome: string;
-  dt_nascimento: Date;
+  dt_nascimento: string;
   cpf: string;
   telefone: string;
   foto: Image | null;
