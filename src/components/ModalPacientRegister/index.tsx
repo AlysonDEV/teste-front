@@ -7,7 +7,6 @@ import './style.scss';
 
 
 
-import { ToastContainer } from 'react-toastify';
 import { api } from '../../service/api';
 import { Patient } from '../../vite-env';
 import { showNotification } from '../Notification';
@@ -124,7 +123,6 @@ export function ModalPacientRegister(): JSX.Element {
     <>
 
 
-      <ToastContainer />
       <Button onClick={handleShow} >Cadastrar Paciente</Button>
       <Modal show={isVisibleModal}>
         <Modal.Header >
