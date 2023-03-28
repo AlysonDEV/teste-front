@@ -5,6 +5,7 @@ import { Patient } from "../../vite-env";
 
 import { api } from "../../service/api";
 
+import { Link } from "react-router-dom";
 import { showNotification } from "../Notification";
 
 export function ViewPacientRecent() {
@@ -52,9 +53,11 @@ export function ViewPacientRecent() {
               <td>{patient.cpf}</td>
               <td>{patient.dt_nascimento}</td>
               <td>
-                <Button>
-                  <RiArrowRightLine />
-                </Button>
+                <Link to={`/atendimento/${patient.id}`}>
+                  <Button>
+                    <RiArrowRightLine />
+                  </Button>
+                </Link>
               </td>
             </tr>
           ))}
