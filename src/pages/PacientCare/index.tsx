@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 
 interface RouteParams {
   id: string;
+  [key: string]: string | undefined;
 }
 
 
