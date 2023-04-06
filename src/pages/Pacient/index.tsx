@@ -1,4 +1,5 @@
 import { ModalPacientRegister } from "../../components/ModalPacientRegister";
+import { ViewPacientRecent } from "../../components/ViewPacientRecent";
 
 
 export function Pacient() {
@@ -6,6 +7,8 @@ export function Pacient() {
     <>
       <h2>Cadastro de pacientes</h2>
       <ModalPacientRegister />
+      <ViewPacientRecent />
+
     </>
   )
 }

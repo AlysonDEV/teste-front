@@ -5,18 +5,29 @@ import InputMask from 'react-input-mask';
 import { CPFValidation } from '../CPFValidation';
 import './style.scss';
 
-import { Patient } from '../../vite-env';
+
 
 import { api } from '../../service/api';
+import { Patient } from '../../vite-env';
+import { showNotification } from '../Notification';
+
+interface AxiosConfig {
+  headers: {
+    "Content-Type": string;
+  };
+}
 
 
-export function ModalPacientRegister() {
+export function ModalPacientRegister(): JSX.Element {
 
   const [patient, setPatient] = useState<Patient>(
-    { name: '', birthdate: new Date(), cpf: '', phone: '', photo: null }
+    { nome: '', dt_nascimento: new Date(), cpf: '', telefone: '', foto: null }
   );
   const [isVisibleModal, setIsVisibleModal] = useState(false)
+  const [previewImagem, setPreviewImagem] = useState(null);
+
   const [cpfError, setCpfError] = useState('')
+
 
   function handleClose() { setIsVisibleModal(false) }
   function handleShow() { setIsVisibleModal(true) }
@@ -24,13 +35,35 @@ export function ModalPacientRegister() {
   async function handleFormSubmit(e: React.FormEvent<HTMLFormElement | HTMLButtonElement>) {
     e.preventDefault()
 
-    const data = await api.post('paciente', patient)
-      .then(res => console.log(res))
-      .catch(error => console.log(error))
 
-    console.log("terminou")
-    // console.log(patient);
-    // handleClose()
+    const fData: FormData = new FormData();
+    fData.append('nome', patient.nome);
+    fData.append('dt_nascimento', patient.dt_nascimento.toISOString().substring(0, 10));
+    fData.append('cpf', patient.cpf);
+    fData.append('telefone', patient.telefone);
+    fData.append('foto', patient.foto);
+
+    const configAxios = {
+      headers: {
+        "Content-Type": `multipart/form-data`,
+      }
+    }
+
+    try {
+      const data = await api.post('paciente', fData, configAxios)
+      showNotification({ message: "Cadastro realizado com sucesso", type: 'success' })
+      setPatient({ nome: '', dt_nascimento: new Date(), cpf: '', telefone: '', foto: null })
+      handleClose()
+    } catch (error) {
+      const errorObj = error.response?.data?.error;
+      const errorMessage = errorObj ? Object.values(errorObj).join('\n') : 'Erro desconhecido';
+
+      showNotification({ message: `Erro ao criar paciente!\n${errorMessage}`, type: 'error' });
+    }
+
+
+
+
   };
 
 
@@ -43,12 +76,11 @@ export function ModalPacientRegister() {
       if (CPFValidation(value)?.isValid) {
         setCpfError('');
       } else {
-        console.log('entrou')
         setCpfError('CPF inválido');
       }
     }
 
-    if (name === 'birthdate') {
+    if (name === 'dt_nascimento') {
 
       const inputDate = new Date(value);
       if (inputDate instanceof Date && !isNaN(inputDate.valueOf())) {
@@ -76,16 +108,21 @@ export function ModalPacientRegister() {
     if (e.target.files && e.target.files[0]) {
       setPatient((prevState) => ({
         ...prevState,
-        photo: e.target.files[0],
+        foto: e.target.files?.[0],
+      }));
+
+    } else {
+      setPatient((prevState) => ({
+        ...prevState,
+        foto: null,
       }));
     }
   };
 
-
-
-
   return (
     <>
+
+
       <Button onClick={handleShow} >Cadastrar Paciente</Button>
       <Modal show={isVisibleModal}>
         <Modal.Header >
@@ -96,10 +133,10 @@ export function ModalPacientRegister() {
             <Form.Group controlId="formBasicName">
               <Form.Label>Nome</Form.Label>
               <Form.Control
+                name="nome"
                 type="text"
                 placeholder="Digite o nome do paciente"
-                name="name"
-                value={patient.name}
+                value={patient.nome}
                 onChange={handleInputChange}
                 required
               />
@@ -108,10 +145,10 @@ export function ModalPacientRegister() {
             <Form.Group controlId="formBasicBirthdate">
               <Form.Label>Data de nascimento</Form.Label>
               <Form.Control
+                name="dt_nascimento"
                 type="date"
                 placeholder="Digite a data de nascimento do paciente"
-                name="birthdate"
-                value={patient.birthdate.toISOString().substr(0, 10)}
+                value={patient.dt_nascimento.toISOString().substr(0, 10)}
                 onChange={handleInputChange}
                 required
               />
@@ -120,11 +157,11 @@ export function ModalPacientRegister() {
             <Form.Group controlId="formBasicCPF">
               <Form.Label>CPF</Form.Label>
               <InputMask
+                name='cpf'
                 mask="999.999.999-99"
                 value={patient.cpf}
                 onChange={handleInputChange}
                 placeholder="Digite o CPF do paciente"
-                name='cpf'
                 type='text'
                 className="form-control"
                 required
@@ -138,10 +175,10 @@ export function ModalPacientRegister() {
             <Form.Group controlId="formBasicPhone">
               <Form.Label>Telefone</Form.Label>
               <InputMask
+                name="telefone"
                 mask="(99) 99999-9999"
-                value={patient.phone}
+                value={patient.telefone}
                 onChange={handleInputChange}
-                name="phone"
                 placeholder="Digite o telefone do paciente"
                 className="form-control"
               />
@@ -149,10 +186,11 @@ export function ModalPacientRegister() {
 
             <Form.Group controlId="formBasicPhoto">
               <Form.Label>Foto</Form.Label>
+              {previewImagem && <img src={previewImagem} alt="Preview da imagem" />}
               <Form.Control
-                type='file'
-                accept=".jpg,.jpeg,.png"
                 name="photo"
+                type='file'
+                accept=".jpg,.jpeg,.png,.webp"
                 onChange={handleFileInputChange}
                 required
               />
