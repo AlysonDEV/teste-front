@@ -1,22 +1,28 @@
 import { useEffect, useState } from "react";
-import { Button, Table } from "react-bootstrap";
+import { Table } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { iPacientCareData } from "../../vite-env";
+
 import { RiArrowRightLine } from "react-icons/ri";
-import { Patient } from "../../vite-env";
+
 
 import { api } from "../../service/api";
-
-import { Link } from "react-router-dom";
 import { showNotification } from "../Notification";
 
+interface AtendimentosPendentesProps {
+  data: iPacientCareData;
+}
+
+
 export function ViewPacientRecent() {
-  const [patients, setPatients] = useState<Patient[]>([]);
+  const [atendimentosPendentes, setAtendimentosPendentes] = useState<iPacientCareData>();
 
   useEffect(() => {
-    api('pacientes')
-      .then(response => {
-        setPatients(response.data);
+    api('atendimentos')
+      .then((response) => {
+        setAtendimentosPendentes(response.data);
       })
-      .catch(error => {
+      .catch((error: any) => {
         showNotification({
           message: `Não foi possível carregar a lista de pacientes: ${error}`,
           type: 'error'
@@ -24,11 +30,30 @@ export function ViewPacientRecent() {
       });
   }, []);
 
-  function calculateAge(dateOfBirth: Date): number {
+
+  const getAge = (birthDateString: string) => {
     const today = new Date();
-    const age = formatDistanceStrict(dateOfBirth, today, { unit: 'year' });
-    return Number(age);
+    const birthDate = new Date(birthDateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDifference < 0 ||
+      (monthDifference === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return age;
+  };
+
+  const formatCPF = (cpf: string) => {
+    return cpf.substring(0, 3) + '.' +
+         cpf.substring(3, 6) + '.' +
+         cpf.substring(6, 9) + '-' +
+         cpf.substring(9);
   }
+
 
 
 
@@ -46,23 +71,20 @@ export function ViewPacientRecent() {
           </tr>
         </thead>
         <tbody>
-          {patients.map(patient => (
-            <tr key={patient.id}>
-              <td>{patient.nome}</td>
-              <td></td>
-              <td>{patient.cpf}</td>
-              <td>{patient.dt_nascimento}</td>
+          {atendimentosPendentes?.atendimentos.map((atendimento) => (
+            <tr key={atendimento.id}>
+              <td>{atendimento.nome}</td>
+              <td>{atendimento.status}</td>
+              <td>{formatCPF(atendimento.cpf)}</td>
+              <td>{getAge(atendimento.dt_nascimento)}</td>
               <td>
-                <Link to={`/atendimento/${patient.id}`}>
-                  <Button>
+                <Link to={`/patientcare/${atendimento.id}`}>
                     <RiArrowRightLine />
-                  </Button>
                 </Link>
               </td>
             </tr>
           ))}
         </tbody>
-
       </Table>
 
     </>
@@ -73,3 +95,5 @@ export function ViewPacientRecent() {
 function formatDistanceStrict(dateOfBirth: Date, today: Date, arg2: { unit: string; }) {
   throw new Error("Function not implemented.");
 }
+
+
